@@ -9,8 +9,22 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Message
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.fakeuserapicall.retrofit.RetrofitHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Response
+import retrofit2.http.GET
+import kotlin.coroutines.coroutineContext
 
 class AlarmReceiver : BroadcastReceiver() {
     private var message="water"
@@ -24,13 +38,13 @@ class AlarmReceiver : BroadcastReceiver() {
         println(message)
         if (context != null) {
             createDefaultChannel(context.applicationContext)
-            sendNotification(context.applicationContext)
+//            sendNotification(context.applicationContext,message)
+            callApiAndSetData(context.applicationContext)
         }
-
     }
 
     @SuppressLint("MissingPermission")
-    private fun sendNotification(context: Context) {
+    private fun sendNotification(context: Context,message: String) {
         val builder1 = NotificationCompat.Builder(context,CHANNEL_ID1).setStyle(
             NotificationCompat.BigTextStyle().setBigContentTitle(message)
                 .bigText(message)
@@ -57,5 +71,17 @@ class AlarmReceiver : BroadcastReceiver() {
         )
         channel.setSound(sound, attributes)
         NotificationManagerCompat.from(context).createNotificationChannel(channel)
+    }
+
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun callApiAndSetData(context: Context) {
+        Toast.makeText(context, "callApiAndSetData", Toast.LENGTH_SHORT).show()
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = RetrofitHelper.getInstance().getData()
+            withContext(Dispatchers.Main) {
+                sendNotification(context, response.body()?.get(0)?.name.toString())
+            }
+        }
     }
 }
