@@ -17,13 +17,16 @@ class MainActivity : AppCompatActivity() {
         var alarmItem: AlarmItem? = null
 
 
-        alarmItem = AlarmItem(
-            time = LocalDateTime.now().plusSeconds(20),
-            "alarm messege : Good Morning water"
-        )
 
-        binding.txtSetAlarm.setOnClickListener {
-            alarmItem.let(scheduler::schedule)
+
+        binding.btnSetAlarm.setOnClickListener {
+            alarmItem = AlarmItem(
+                time = LocalDateTime.now().plusSeconds(binding.edtTime.text.toString().toLong()),
+                binding.edtMsg.text.toString()
+            )
+            alarmItem?.let(scheduler::schedule)
+
+
         }
 
     }
